@@ -1,0 +1,51 @@
+{
+  "name": "bluepsyduck/symfony-process-manager",
+  "description": "A process manager for Symfony processes, able to run them in parallel.",
+  "homepage": "https://github.com/BluePsyduck/symfony-process-manager",
+  "type": "library",
+  "keywords": ["symfony", "process", "manager", "parallel"],
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "BluePsyduck",
+      "email": "bluepsyduck@gmx.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": "^7.1",
+    "symfony/process": "^3.0 || ^4.0"
+  },
+  "require-dev": {
+    "bluepsyduck/common": "^1.0",
+    "phpstan/phpstan": "^0.10",
+    "phpstan/phpstan-phpunit": "^0.10",
+    "phpstan/phpstan-strict-rules": "^0.10",
+    "phpunit/phpunit": "^7.3",
+    "rregeer/phpunit-coverage-check": "^0.1",
+    "squizlabs/php_codesniffer": "^3.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "BluePsyduck\\SymfonyProcessManager\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BluePsyduckTest\\SymfonyProcessManager\\": "test/src"
+    }
+  },
+  "scripts": {
+    "coverage-check": "coverage-check test/log/clover.xml 100",
+    "phpcbf": "phpcbf -p --colors",
+    "phpcs": "phpcs -p --colors",
+    "phpstan": "phpstan analyse --no-interaction --ansi",
+    "phpunit": "phpunit --colors=always --coverage-html=test/log --coverage-clover=test/log/clover.xml",
+    "test": [
+      "@phpunit",
+      "@coverage-check",
+      "@phpcs",
+      "@phpstan"
+    ]
+  }
+}
