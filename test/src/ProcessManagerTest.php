@@ -68,36 +68,6 @@ class ProcessManagerTest extends TestCase
     }
 
     /**
-     * Tests the setProcessSuccessCallback method.
-     * @covers ::setProcessSuccessCallback
-     * @throws ReflectionException
-     */
-    public function testSetProcessSuccessCallback(): void
-    {
-        $callback = 'strval';
-
-        $manager = new ProcessManager();
-        $result = $manager->setProcessSuccessCallback($callback);
-        $this->assertSame($manager, $result);
-        $this->assertSame($callback, $this->extractProperty($manager, 'processSuccessCallback'));
-    }
-    
-    /**
-     * Tests the setProcessFailCallback method.
-     * @covers ::setProcessFailCallback
-     * @throws ReflectionException
-     */
-    public function testSetProcessFailCallback(): void
-    {
-        $callback = 'strval';
-
-        $manager = new ProcessManager();
-        $result = $manager->setProcessFailCallback($callback);
-        $this->assertSame($manager, $result);
-        $this->assertSame($callback, $this->extractProperty($manager, 'processFailCallback'));
-    }
-
-    /**
      * Provides the data for the invokeCallback test.
      * @return array
      */
@@ -108,7 +78,6 @@ class ProcessManagerTest extends TestCase
             [false],
         ];
     }
-
 
     /**
      * Tests the invokeCallback method.
@@ -292,10 +261,10 @@ class ProcessManagerTest extends TestCase
         $manager->expects($this->exactly(2))
                 ->method('checkRunningProcess')
                 ->withConsecutive(
-                    [$process1],
-                    [$process2]
+                    [42, $process1],
+                    [1337, $process2]
                 );
-        $this->injectProperty($manager, 'runningProcesses', [$process1, $process2]);
+        $this->injectProperty($manager, 'runningProcesses', [42 => $process1, 1337 => $process2]);
 
         $this->invokeMethod($manager, 'checkRunningProcesses');
     }
@@ -307,26 +276,26 @@ class ProcessManagerTest extends TestCase
     public function provideCheckRunningProcess(): array
     {
         return [
-            [true, null, false],
-            [false, true, true],
-            [false, false, true],
+            [true, false],
+            [false, true],
+            [false, true],
         ];
     }
 
     /**
      * Tests the checkRunningProcess method.
      * @param bool $resultIsRunning
-     * @param bool|null $resultIsSuccessful
      * @param bool $expectFinish
      * @throws ReflectionException
      * @covers ::checkRunningProcess
      * @dataProvider provideCheckRunningProcess
      */
-    public function testCheckRunningProcess(bool $resultIsRunning, ?bool $resultIsSuccessful, bool $expectFinish): void
+    public function testCheckRunningProcess(bool $resultIsRunning, bool $expectFinish): void
     {
+        $pid = 42;
         /* @var Process|MockObject $process */
         $process = $this->getMockBuilder(Process::class)
-                        ->setMethods(['checkTimeout', 'isRunning', 'isSuccessful', 'getPid'])
+                        ->setMethods(['checkTimeout', 'isRunning'])
                         ->disableOriginalConstructor()
                         ->getMock();
         $process->expects($this->once())
@@ -334,12 +303,6 @@ class ProcessManagerTest extends TestCase
         $process->expects($this->once())
                 ->method('isRunning')
                 ->willReturn($resultIsRunning);
-        $process->expects($resultIsSuccessful === null ? $this->never() : $this->once())
-                ->method('isSuccessful')
-                ->willReturn($resultIsSuccessful);
-        $process->expects($expectFinish ? $this->once() : $this->never())
-                ->method('getPid')
-                ->willReturn(42);
 
         /* @var Process $process2 */
         $process2 = $this->createMock(Process::class);
@@ -351,20 +314,15 @@ class ProcessManagerTest extends TestCase
                         ->setMethods(['invokeCallback', 'executeNextPendingProcess'])
                         ->disableOriginalConstructor()
                         ->getMock();
-        $manager->expects($expectFinish ? $this->exactly(2) : $this->never())
+        $manager->expects($expectFinish ? $this->once() : $this->never())
                 ->method('invokeCallback')
-                ->withConsecutive(
-                    [(bool) $resultIsSuccessful ? 'intval' : 'floatval', $process],
-                    ['strval', $process]
-                );
+                ->with('strval', $process);
         $manager->expects($expectFinish ? $this->once() : $this->never())
                 ->method('executeNextPendingProcess');
-        $manager->setProcessFinishCallback('strval')
-                ->setProcessSuccessCallback('intval')
-                ->setProcessFailCallback('floatval');
+        $manager->setProcessFinishCallback('strval');
         $this->injectProperty($manager, 'runningProcesses', $runningProcesses);
 
-        $this->invokeMethod($manager, 'checkRunningProcess', $process);
+        $this->invokeMethod($manager, 'checkRunningProcess', $pid, $process);
         $this->assertEquals($expectedRunningProcesses, $this->extractProperty($manager, 'runningProcesses'));
     }
 

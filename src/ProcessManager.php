@@ -51,18 +51,6 @@ class ProcessManager
     protected $processFinishCallback;
 
     /**
-     * The callback for when a process has successfully finished with exit code 0.
-     * @var callable|null
-     */
-    protected $processSuccessCallback;
-
-    /**
-     * The callback for when a process has failed to finish with exit code 0.
-     * @var callable|null
-     */
-    protected $processFailCallback;
-
-    /**
      * ProcessManager constructor.
      * @param int $numberOfParallelProcesses The number of processes to run in parallel.
      * @param int $pollInterval The interval to wait between the polls of the processes, in milliseconds.
@@ -92,28 +80,6 @@ class ProcessManager
     public function setProcessFinishCallback(?callable $processFinishCallback)
     {
         $this->processFinishCallback = $processFinishCallback;
-        return $this;
-    }
-
-    /**
-     * Sets the callback for when a process has failed to finish with exit code 0.
-     * @param callable|null $processSuccessCallback The callback, accepting a Process as only argument.
-     * @return $this
-     */
-    public function setProcessSuccessCallback(?callable $processSuccessCallback)
-    {
-        $this->processSuccessCallback = $processSuccessCallback;
-        return $this;
-    }
-
-    /**
-     * Sets the callback for when a process has successfully finished with exit code 0.
-     * @param callable|null $processFailCallback The callback, accepting a Process as only argument.
-     * @return $this
-     */
-    public function setProcessFailCallback(?callable $processFailCallback)
-    {
-        $this->processFailCallback = $processFailCallback;
         return $this;
     }
 
@@ -173,26 +139,23 @@ class ProcessManager
      */
     protected function checkRunningProcesses(): void
     {
-        foreach ($this->runningProcesses as $process) {
-            $this->checkRunningProcess($process);
+        foreach ($this->runningProcesses as $pid => $process) {
+            $this->checkRunningProcess($pid, $process);
         }
     }
 
     /**
      * Checks the process whether it has finished.
+     * @param int $pid
      * @param Process $process
      */
-    protected function checkRunningProcess(Process $process): void
+    protected function checkRunningProcess(int $pid, Process $process): void
     {
         $process->checkTimeout();
         if (!$process->isRunning()) {
-            $this->invokeCallback(
-                $process->isSuccessful() ? $this->processSuccessCallback : $this->processFailCallback,
-                $process
-            );
             $this->invokeCallback($this->processFinishCallback, $process);
 
-            unset($this->runningProcesses[$process->getPid()]);
+            unset($this->runningProcesses[$pid]);
             $this->executeNextPendingProcess();
         }
     }

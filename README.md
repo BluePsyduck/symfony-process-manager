@@ -41,11 +41,6 @@ The process manager allows for some callbacks to be specified, which get called 
 
 * **processStartCallback:** Triggered before a process is started.
 * **processFinishCallback:** Triggered when a process has finished.
-* **processSuccessCallback:** Triggered when a processes has finished with an exit code of 0.
-* **processFailCallback:** Triggered when a processes has failed with an exit code other than 0.
-
-_Note:_ Each process will trigger either the `processSuccessCallback` or the `processFailCallback` depending of its exit 
-code. The `processFinishCallback` will always be triggered afterwards, ignoring the exit code.
 
 Each callback gets the process instance which triggered the event passed as only parameter. Here is an example of 
 setting a `processStartCallback`:
