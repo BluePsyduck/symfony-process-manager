@@ -167,7 +167,14 @@ class ProcessManager implements ProcessManagerInterface
             /* @var Process $process */
             $this->invokeCallback($this->processStartCallback, $process);
             $process->start($callback, $env);
-            $this->runningProcesses[$process->getPid()] = $process;
+
+            $pid = $process->getPid();
+            if ($pid === null) {
+                // The process finished before we were able to check its process id.
+                $this->checkRunningProcess($pid, $process);
+            } else {
+                $this->runningProcesses[$pid] = $process;
+            }
         }
     }
 
@@ -193,16 +200,18 @@ class ProcessManager implements ProcessManagerInterface
 
     /**
      * Checks the process whether it has finished.
-     * @param int $pid
+     * @param int|null $pid
      * @param Process $process
      */
-    protected function checkRunningProcess(int $pid, Process $process): void
+    protected function checkRunningProcess(?int $pid, Process $process): void
     {
         $process->checkTimeout();
         if (!$process->isRunning()) {
             $this->invokeCallback($this->processFinishCallback, $process);
 
-            unset($this->runningProcesses[$pid]);
+            if ($pid !== null) {
+                unset($this->runningProcesses[$pid]);
+            }
             $this->executeNextPendingProcess();
         }
     }
