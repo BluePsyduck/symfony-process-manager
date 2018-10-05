@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
  * @author BluePsyduck <bluepsyduck@gmx.com>
  * @license http://opensource.org/licenses/GPL-3.0 GPL v3
  */
-class ProcessManager
+class ProcessManager implements ProcessManagerInterface
 {
     /**
      * The number of processes to run in parallel.
