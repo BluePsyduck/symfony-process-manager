@@ -20,8 +20,9 @@ use Symfony\Component\Process\Process;
 
 $numberOfParallelProcesses = 4; // The number of processes to execute in parallel.
 $pollInterval = 100; // The interval to use for polling the processes, in milliseconds.
+$processStartDelay = 0; // The time to delay the start of processes to space them out, in milliseconds.
 
-$processManager = new ProcessManager($numberOfParallelProcesses, $pollInterval);
+$processManager = new ProcessManager($numberOfParallelProcesses, $pollInterval, $processStartDelay);
 
 // Add some processes
 // Processes get executed automatically once they are added to the manager. 

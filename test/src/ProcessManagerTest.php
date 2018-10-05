@@ -31,10 +31,66 @@ class ProcessManagerTest extends TestCase
     {
         $numberOfParallelProcesses = 42;
         $pollInterval = 1337;
+        $processStartDelay = 21;
 
-        $manager = new ProcessManager($numberOfParallelProcesses, $pollInterval);
+        $manager = new ProcessManager($numberOfParallelProcesses, $pollInterval, $processStartDelay);
         $this->assertSame($numberOfParallelProcesses, $this->extractProperty($manager, 'numberOfParallelProcesses'));
         $this->assertSame($pollInterval, $this->extractProperty($manager, 'pollInterval'));
+        $this->assertSame($processStartDelay, $this->extractProperty($manager, 'processStartDelay'));
+    }
+
+    /**
+     * Tests the setNumberOfParallelProcesses method.
+     * @throws ReflectionException
+     * @covers ::setNumberOfParallelProcesses
+     */
+    public function testSetNumberOfParallelProcesses(): void
+    {
+        $numberOfParallelProcesses = 42;
+
+        /* @var ProcessManager|MockObject $manager */
+        $manager = $this->getMockBuilder(ProcessManager::class)
+                        ->setMethods(['executeNextPendingProcess'])
+                        ->setConstructorArgs([])
+                        ->getMock();
+        $manager->expects($this->once())
+                ->method('executeNextPendingProcess');
+
+        $result = $manager->setNumberOfParallelProcesses($numberOfParallelProcesses);
+        $this->assertSame($manager, $result);
+        $this->assertSame($numberOfParallelProcesses, $this->extractProperty($manager, 'numberOfParallelProcesses'));
+    }
+
+    /**
+     * Tests the setPollInterval method.
+     * @throws ReflectionException
+     * @covers ::setPollInterval
+     */
+    public function testSetPollInterval(): void
+    {
+        $pollInterval = 1337;
+
+        $manager = new ProcessManager();
+
+        $result = $manager->setPollInterval($pollInterval);
+        $this->assertSame($manager, $result);
+        $this->assertSame($pollInterval, $this->extractProperty($manager, 'pollInterval'));
+    }
+
+    /**
+     * Tests the setProcessStartDelay method.
+     * @throws ReflectionException
+     * @covers ::setProcessStartDelay
+     */
+    public function testSetProcessStartDelay(): void
+    {
+        $processStartDelay = 21;
+
+        $manager = new ProcessManager();
+
+        $result = $manager->setProcessStartDelay($processStartDelay);
+        $this->assertSame($manager, $result);
+        $this->assertSame($processStartDelay, $this->extractProperty($manager, 'processStartDelay'));
     }
 
     /**
@@ -149,6 +205,7 @@ class ProcessManagerTest extends TestCase
      */
     public function testExecuteNextPendingProcess(): void
     {
+        $processStartDelay = 1337;
         $callback = 'strval';
         $processStartCallback = 'intval';
         $env = ['foo' => 'bar'];
@@ -184,12 +241,16 @@ class ProcessManagerTest extends TestCase
 
         /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['canExecuteNextPendingRequest', 'invokeCallback'])
-                        ->disableOriginalConstructor()
+                        ->setMethods(['canExecuteNextPendingRequest', 'sleep', 'invokeCallback'])
+                        ->setConstructorArgs([0, 0, $processStartDelay])
                         ->getMock();
         $manager->expects($this->once())
                 ->method('canExecuteNextPendingRequest')
                 ->willReturn(true);
+        $manager->expects($this->once())
+                ->method('sleep')
+                ->with($processStartDelay);
+
         $manager->expects($this->once())
                 ->method('invokeCallback')
                 ->with($processStartCallback, $process);
@@ -332,10 +393,12 @@ class ProcessManagerTest extends TestCase
      */
     public function testWaitForAllProcesses(): void
     {
+        $pollInterval = 1337;
+
         /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
                         ->setMethods(['hasUnfinishedProcesses', 'sleep', 'checkRunningProcesses'])
-                        ->disableOriginalConstructor()
+                        ->setConstructorArgs([42, $pollInterval, 21])
                         ->getMock();
         $manager->expects($this->exactly(3))
                 ->method('hasUnfinishedProcesses')
@@ -345,7 +408,8 @@ class ProcessManagerTest extends TestCase
                     false
                 );
         $manager->expects($this->exactly(2))
-                ->method('sleep');
+                ->method('sleep')
+                ->with($pollInterval);
         $manager->expects($this->exactly(2))
                 ->method('checkRunningProcesses');
 
@@ -360,13 +424,13 @@ class ProcessManagerTest extends TestCase
      */
     public function testSleep(): void
     {
-        $pollInterval = 100;
-        $manager = new ProcessManager(42, $pollInterval);
+        $milliseconds = 100;
+        $manager = new ProcessManager();
 
         $startTime = microtime(true);
-        $this->invokeMethod($manager, 'sleep');
+        $this->invokeMethod($manager, 'sleep', $milliseconds);
         $endTime = microtime(true);
-        $this->assertTrue($endTime >= $startTime + $pollInterval / 1000);
+        $this->assertTrue($endTime >= $startTime + $milliseconds / 1000);
     }
 
     /**
