@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 - 2018-10-07
 
-### Add
+### Added
 
 - Option to delay the start of processes to space them out.
+- Added setter methods for the options.
 - `ProcessManagerInterface`.
 
 ### Fixed
