@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 - 2018-12-03
+
+### Added
+
+- New callback `processTimeoutCallback`.
+
+### Fixed
+
+- Process manager failed to continue executing processes when one of them timed out. 
+
 ## 1.1.0 - 2018-10-07
 
 ### Added

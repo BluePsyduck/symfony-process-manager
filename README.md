@@ -27,8 +27,8 @@ $processManager = new ProcessManager($numberOfParallelProcesses, $pollInterval, 
 // Add some processes
 // Processes get executed automatically once they are added to the manager. 
 // If the limit of parallel processes is reached, they are placed in a queue and wait for a process to finish.
-$processManager->addProcess(new Process('ls -l'));
-$processManager->addProcess(new Process('ls -l'));
+$processManager->addProcess(Process::fromShellCommandline('ls -l'));
+$processManager->addProcess(Process::fromShellCommandline('ls -l'));
 
 // Wait for all processes to finish
 $processManager->waitForAllProcesses();
@@ -42,6 +42,8 @@ The process manager allows for some callbacks to be specified, which get called 
 
 * **processStartCallback:** Triggered before a process is started.
 * **processFinishCallback:** Triggered when a process has finished.
+* **processTimeoutCallback:** Triggered when a process timed out. Note that the _processFinishCallback_ will be 
+  triggered afterwards as well.
 
 Each callback gets the process instance which triggered the event passed as only parameter. Here is an example of 
 setting a `processStartCallback`:
@@ -57,6 +59,6 @@ $processManager->setProcessStartCallback(function (Process $process): void {
     echo 'Starting process: ' . $process->getCommandLine();
 });
 
-$processManager->addProcess(new Process('ls -l'));
+$processManager->addProcess(Process::fromShellCommandline('ls -l'));
 $processManager->waitForAllProcesses();
 ```

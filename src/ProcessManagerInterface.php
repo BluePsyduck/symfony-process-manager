@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BluePsyduck\SymfonyProcessManager;
 
 use Symfony\Component\Process\Process;

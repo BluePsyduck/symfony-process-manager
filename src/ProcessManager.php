@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BluePsyduck\SymfonyProcessManager;
 
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -55,6 +56,12 @@ class ProcessManager implements ProcessManagerInterface
      * @var callable|null
      */
     protected $processFinishCallback;
+
+    /**
+     * The callback for when a process timed out.
+     * @var callable|null
+     */
+    protected $processTimeoutCallback;
 
     /**
      * ProcessManager constructor.
@@ -125,6 +132,17 @@ class ProcessManager implements ProcessManagerInterface
     public function setProcessFinishCallback(?callable $processFinishCallback)
     {
         $this->processFinishCallback = $processFinishCallback;
+        return $this;
+    }
+
+    /**
+     * Sets the callback for when a process timed out.
+     * @param callable|null $processTimeoutCallback
+     * @return $this
+     */
+    public function setProcessTimeoutCallback(?callable $processTimeoutCallback)
+    {
+        $this->processTimeoutCallback = $processTimeoutCallback;
         return $this;
     }
 
@@ -205,7 +223,7 @@ class ProcessManager implements ProcessManagerInterface
      */
     protected function checkRunningProcess(?int $pid, Process $process): void
     {
-        $process->checkTimeout();
+        $this->checkProcessTimeout($process);
         if (!$process->isRunning()) {
             $this->invokeCallback($this->processFinishCallback, $process);
 
@@ -213,6 +231,19 @@ class ProcessManager implements ProcessManagerInterface
                 unset($this->runningProcesses[$pid]);
             }
             $this->executeNextPendingProcess();
+        }
+    }
+
+    /**
+     * Checks whether the process already timed out.
+     * @param Process $process
+     */
+    protected function checkProcessTimeout(Process $process): void
+    {
+        try {
+            $process->checkTimeout();
+        } catch (ProcessTimedOutException $e) {
+            $this->invokeCallback($this->processTimeoutCallback, $process);
         }
     }
 
