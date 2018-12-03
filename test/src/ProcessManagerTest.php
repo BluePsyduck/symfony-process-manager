@@ -9,6 +9,7 @@ use BluePsyduck\SymfonyProcessManager\ProcessManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -121,6 +122,21 @@ class ProcessManagerTest extends TestCase
         $result = $manager->setProcessFinishCallback($callback);
         $this->assertSame($manager, $result);
         $this->assertSame($callback, $this->extractProperty($manager, 'processFinishCallback'));
+    }
+
+    /**
+     * Tests the setProcessTimeoutCallback method.
+     * @covers ::setProcessTimeoutCallback
+     * @throws ReflectionException
+     */
+    public function testSetProcessTimeoutCallback(): void
+    {
+        $callback = 'strval';
+
+        $manager = new ProcessManager();
+        $result = $manager->setProcessTimeoutCallback($callback);
+        $this->assertSame($manager, $result);
+        $this->assertSame($callback, $this->extractProperty($manager, 'processTimeoutCallback'));
     }
 
     /**
@@ -376,11 +392,9 @@ class ProcessManagerTest extends TestCase
     ): void {
         /* @var Process|MockObject $process */
         $process = $this->getMockBuilder(Process::class)
-                        ->setMethods(['checkTimeout', 'isRunning'])
+                        ->setMethods(['isRunning'])
                         ->disableOriginalConstructor()
                         ->getMock();
-        $process->expects($this->once())
-                ->method('checkTimeout');
         $process->expects($this->once())
                 ->method('isRunning')
                 ->willReturn($resultIsRunning);
@@ -392,9 +406,13 @@ class ProcessManagerTest extends TestCase
 
         /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['invokeCallback', 'executeNextPendingProcess'])
+                        ->setMethods(['checkProcessTimeout', 'invokeCallback', 'executeNextPendingProcess'])
                         ->disableOriginalConstructor()
                         ->getMock();
+        $manager->expects($this->once())
+                ->method('checkProcessTimeout')
+                ->with($process)
+                ->willReturn(false);
         $manager->expects($expectFinish ? $this->once() : $this->never())
                 ->method('invokeCallback')
                 ->with('strval', $process);
@@ -405,6 +423,56 @@ class ProcessManagerTest extends TestCase
 
         $this->invokeMethod($manager, 'checkRunningProcess', $pid, $process);
         $this->assertEquals($expectedRunningProcesses, $this->extractProperty($manager, 'runningProcesses'));
+    }
+
+    /**
+     * Provides the data for the checkProcessTimeout test.
+     * @return array
+     */
+    public function provideCheckProcessTimeout(): array
+    {
+        return [
+            [false, false],
+            [true, true],
+        ];
+    }
+
+    /**
+     * Tests the checkProcessTimeout method.
+     * @param bool $throwException
+     * @param bool $expectInvoke
+     * @throws ReflectionException
+     * @covers ::checkProcessTimeout
+     * @dataProvider provideCheckProcessTimeout
+     */
+    public function testCheckProcessTimeout(bool $throwException, bool $expectInvoke): void
+    {
+        /* @var Process|MockObject $process */
+        $process = $this->getMockBuilder(Process::class)
+                        ->setMethods(['checkTimeout'])
+                        ->disableOriginalConstructor()
+                        ->getMock();
+
+        if ($throwException) {
+            $process->expects($this->once())
+                    ->method('checkTimeout')
+                    ->willThrowException($this->createMock(ProcessTimedOutException::class));
+        } else {
+            $process->expects($this->once())
+                    ->method('checkTimeout');
+        }
+
+        /* @var ProcessManager|MockObject $manager */
+        $manager = $this->getMockBuilder(ProcessManager::class)
+                        ->setMethods(['invokeCallback'])
+                        ->disableOriginalConstructor()
+                        ->getMock();
+        $manager->expects($expectInvoke ? $this->once() : $this->never())
+                ->method('invokeCallback')
+                ->with('strval', $process);
+        $manager->setProcessTimeoutCallback('strval');
+
+        $this->invokeMethod($manager, 'checkProcessTimeout', $process);
     }
 
     /**
