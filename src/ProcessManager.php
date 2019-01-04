@@ -64,6 +64,12 @@ class ProcessManager implements ProcessManagerInterface
     protected $processTimeoutCallback;
 
     /**
+     * The callback for when a process is checked.
+     * @var callable|null
+     */
+    protected $processCheckCallback;
+
+    /**
      * ProcessManager constructor.
      * @param int $numberOfParallelProcesses The number of processes to run in parallel.
      * @param int $pollInterval The interval to wait between the polls of the processes, in milliseconds.
@@ -147,6 +153,17 @@ class ProcessManager implements ProcessManagerInterface
     }
 
     /**
+     * Sets the callback for when a process is checked.
+     * @param callable|null $processCheckCallback
+     * @return $this
+     */
+    public function setProcessCheckCallback(?callable $processCheckCallback)
+    {
+        $this->processCheckCallback = $processCheckCallback;
+        return $this;
+    }
+
+    /**
      * Invokes the callback if it is an callable.
      * @param callable|null $callback
      * @param Process $process
@@ -223,6 +240,7 @@ class ProcessManager implements ProcessManagerInterface
      */
     protected function checkRunningProcess(?int $pid, Process $process): void
     {
+        $this->invokeCallback($this->processCheckCallback, $process);
         $this->checkProcessTimeout($process);
         if (!$process->isRunning()) {
             $this->invokeCallback($this->processFinishCallback, $process);

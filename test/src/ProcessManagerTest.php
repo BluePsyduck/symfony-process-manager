@@ -140,6 +140,21 @@ class ProcessManagerTest extends TestCase
     }
 
     /**
+     * Tests the setProcessCheckCallback method.
+     * @covers ::setProcessCheckCallback
+     * @throws ReflectionException
+     */
+    public function testSetProcessCheckCallback(): void
+    {
+        $callback = 'strval';
+
+        $manager = new ProcessManager();
+        $result = $manager->setProcessCheckCallback($callback);
+        $this->assertSame($manager, $result);
+        $this->assertSame($callback, $this->extractProperty($manager, 'processCheckCallback'));
+    }
+
+    /**
      * Provides the data for the invokeCallback test.
      * @return array
      */
