@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 - 2019-01-07
+
+### Added
+
+- New callback `processCheckCallback`.
+
 ## 1.2.0 - 2018-12-03
 
 ### Added
