@@ -44,6 +44,8 @@ The process manager allows for some callbacks to be specified, which get called 
 * **processFinishCallback:** Triggered when a process has finished.
 * **processTimeoutCallback:** Triggered when a process timed out. Note that the _processFinishCallback_ will be 
   triggered afterwards as well.
+* **processCheckCallback:** Triggered when a process is checked. Note that his callback is performed before every
+  other callback everytime, the process is checked.
 
 Each callback gets the process instance which triggered the event passed as only parameter. Here is an example of 
 setting a `processStartCallback`:

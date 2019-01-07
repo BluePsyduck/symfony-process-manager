@@ -140,6 +140,21 @@ class ProcessManagerTest extends TestCase
     }
 
     /**
+     * Tests the setProcessCheckCallback method.
+     * @covers ::setProcessCheckCallback
+     * @throws ReflectionException
+     */
+    public function testSetProcessCheckCallback(): void
+    {
+        $callback = 'strval';
+
+        $manager = new ProcessManager();
+        $result = $manager->setProcessCheckCallback($callback);
+        $this->assertSame($manager, $result);
+        $this->assertSame($callback, $this->extractProperty($manager, 'processCheckCallback'));
+    }
+
+    /**
      * Provides the data for the invokeCallback test.
      * @return array
      */
@@ -413,12 +428,16 @@ class ProcessManagerTest extends TestCase
                 ->method('checkProcessTimeout')
                 ->with($process)
                 ->willReturn(false);
-        $manager->expects($expectFinish ? $this->once() : $this->never())
+        $manager->expects($this->exactly($expectFinish ? 2 : 1))
                 ->method('invokeCallback')
-                ->with('strval', $process);
+                ->withConsecutive(
+                    ['intval', $process],
+                    ['strval', $process]
+                );
         $manager->expects($expectFinish ? $this->once() : $this->never())
                 ->method('executeNextPendingProcess');
-        $manager->setProcessFinishCallback('strval');
+        $manager->setProcessFinishCallback('strval')
+                ->setProcessCheckCallback('intval');
         $this->injectProperty($manager, 'runningProcesses', $runningProcesses);
 
         $this->invokeMethod($manager, 'checkRunningProcess', $pid, $process);
