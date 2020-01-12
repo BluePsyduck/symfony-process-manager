@@ -16,9 +16,9 @@ interface ProcessManagerInterface
 {
     /**
      * Adds a process to the manager.
-     * @param Process $process
+     * @param Process<string> $process
      * @param callable|null $callback
-     * @param array $env
+     * @param array<mixed> $env
      * @return $this
      */
     public function addProcess(Process $process, callable $callback = null, array $env = []);

@@ -35,13 +35,13 @@ class ProcessManager implements ProcessManagerInterface
 
     /**
      * The processes currently waiting to be executed.
-     * @var array
+     * @var array<mixed>
      */
     protected $pendingProcessData = [];
 
     /**
      * The processes currently running.
-     * @var array|Process[]
+     * @var array<Process<string>>
      */
     protected $runningProcesses = [];
 
@@ -166,7 +166,7 @@ class ProcessManager implements ProcessManagerInterface
     /**
      * Invokes the callback if it is an callable.
      * @param callable|null $callback
-     * @param Process $process
+     * @param Process<string> $process
      */
     protected function invokeCallback(?callable $callback, Process $process): void
     {
@@ -177,9 +177,9 @@ class ProcessManager implements ProcessManagerInterface
 
     /**
      * Adds a process to the manager.
-     * @param Process $process
+     * @param Process<string> $process
      * @param callable|null $callback
-     * @param array $env
+     * @param array<mixed> $env
      * @return $this
      */
     public function addProcess(Process $process, callable $callback = null, array $env = [])
@@ -236,7 +236,7 @@ class ProcessManager implements ProcessManagerInterface
     /**
      * Checks the process whether it has finished.
      * @param int|null $pid
-     * @param Process $process
+     * @param Process<string> $process
      */
     protected function checkRunningProcess(?int $pid, Process $process): void
     {
@@ -254,7 +254,7 @@ class ProcessManager implements ProcessManagerInterface
 
     /**
      * Checks whether the process already timed out.
-     * @param Process $process
+     * @param Process<string> $process
      */
     protected function checkProcessTimeout(Process $process): void
     {

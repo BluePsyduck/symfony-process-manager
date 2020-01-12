@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BluePsyduckTest\SymfonyProcessManager;
 
-use BluePsyduck\Common\Test\ReflectionTrait;
+use BluePsyduck\TestHelper\ReflectionTrait;
 use BluePsyduck\SymfonyProcessManager\ProcessManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -156,7 +156,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the invokeCallback test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideInvokeCallback(): array
     {
@@ -231,7 +231,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the executeNextPendingProcess test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideExecuteNextPendingProcess(): array
     {
@@ -312,7 +312,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the canExecuteNextPendingRequest test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideCanExecuteNextPendingRequest(): array
     {
@@ -325,9 +325,9 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Tests the canExecuteNextPendingRequest method.
-     * @param array $runningProcesses
+     * @param array<Process<string>> $runningProcesses
      * @param int $numberOfParallelProcesses
-     * @param array $pendingProcessData
+     * @param array<mixed> $pendingProcessData
      * @param bool $expectedResult
      * @throws ReflectionException
      * @covers ::canExecuteNextPendingRequest
@@ -377,7 +377,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the checkRunningProcess test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideCheckRunningProcess(): array
     {
@@ -446,7 +446,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the checkProcessTimeout test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideCheckProcessTimeout(): array
     {
@@ -542,7 +542,7 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Provides the data for the hasUnfinishedProcesses test.
-     * @return array
+     * @return array<mixed>
      */
     public function provideHasUnfinishedProcesses(): array
     {
@@ -555,8 +555,8 @@ class ProcessManagerTest extends TestCase
 
     /**
      * Tests the hasUnfinishedProcesses method.
-     * @param array $pendingProcessData
-     * @param array $runningProcesses
+     * @param array<mixed> $pendingProcessData
+     * @param array<Process<string>> $runningProcesses
      * @param bool $expectedResult
      * @throws ReflectionException
      * @covers ::hasUnfinishedProcesses

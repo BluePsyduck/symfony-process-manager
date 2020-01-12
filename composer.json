@@ -17,12 +17,12 @@
     "symfony/process": "^3.0 || ^4.0 || ^5.0"
   },
   "require-dev": {
-    "bluepsyduck/common": "^1.0",
-    "phpstan/phpstan": "^0.10",
-    "phpstan/phpstan-phpunit": "^0.10",
-    "phpstan/phpstan-strict-rules": "^0.10",
+    "bluepsyduck/test-helper": "^1.0",
+    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan-phpunit": "^0.12",
+    "phpstan/phpstan-strict-rules": "^0.12",
     "phpunit/phpunit": "^7.3",
-    "rregeer/phpunit-coverage-check": "^0.1",
+    "rregeer/phpunit-coverage-check": "^0.3",
     "squizlabs/php_codesniffer": "^3.3"
   },
   "autoload": {
