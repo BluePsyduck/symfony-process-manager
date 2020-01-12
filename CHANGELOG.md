@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1 - 2020-01-12
+
+### Added
+
+- Support for symfony/process 5.x to be used with the process manager.
+
 ## 1.3.0 - 2019-01-07
 
 ### Added
