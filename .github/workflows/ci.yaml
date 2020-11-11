@@ -1,0 +1,136 @@
+name: CI
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+
+  unit-tests:
+    name: Unit Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - 7.2
+          - 7.3
+          - 7.4
+          - 8.0
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: xdebug
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+          echo "::add-matcher::.github/problem-matchers/coverage-check.json"
+
+      - name: Update dependencies
+        run: composer update --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run phpunit
+        run: vendor/bin/phpunit --testsuite unit-test --coverage-clover=coverage.xml
+
+      - name: Check coverage.xml existence
+        id: check-coverage-file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: coverage.xml
+
+      - name: Run coverage-check
+        if: ${{ always() && steps.check-coverage-file.outputs.files_exists == 'true' }}
+        run: vendor/bin/coverage-check coverage.xml 100
+
+      - name: Upload coverage as artifacts
+        if: ${{ always() && steps.check-coverage-file.outputs.files_exists == 'true' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-${{ matrix.php-version }}
+          path: coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: ${{ always() && steps.check-coverage-file.outputs.files_exists == 'true' }}
+        uses: codecov/codecov-action@v1
+        with:
+          name: coverage-${{ matrix.php-version }}
+          file: coverage.xml
+
+  coding-guidelines:
+    name: Coding Guidelines
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: cs2pr
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Update dependencies
+        run: composer update --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run phpcs
+        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
+
+  type-checker:
+    name: Type Checker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Update dependencies
+        run: composer update --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run phpstan
+        run: vendor/bin/phpstan analyse --no-interaction

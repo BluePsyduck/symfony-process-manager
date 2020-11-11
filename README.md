@@ -1,9 +1,9 @@
 # Symfony Process Manager
 
-[![Latest Stable Version](https://poser.pugx.org/bluepsyduck/symfony-process-manager/v/stable)](https://packagist.org/packages/bluepsyduck/symfony-process-manager)
-[![License](https://poser.pugx.org/bluepsyduck/symfony-process-manager/license)](https://packagist.org/packages/bluepsyduck/symfony-process-manager)
-[![Build Status](https://travis-ci.com/BluePsyduck/symfony-process-manager.svg?branch=master)](https://travis-ci.com/BluePsyduck/symfony-process-manager)
-[![codecov](https://codecov.io/gh/BluePsyduck/symfony-process-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/BluePsyduck/symfony-process-manager)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/BluePsyduck/symfony-process-manager)](https://github.com/BluePsyduck/symfony-process-manager/releases)
+[![GitHub](https://img.shields.io/github/license/BluePsyduck/symfony-process-manager)](LICENSE.md)
+[![build](https://img.shields.io/github/workflow/status/BluePsyduck/symfony-process-manager/CI?logo=github)](https://github.com/BluePsyduck/symfony-process-manager/actions)
+[![Codecov](https://img.shields.io/codecov/c/gh/BluePsyduck/symfony-process-manager?logo=codecov)](https://codecov.io/gh/BluePsyduck/symfony-process-manager)
 
 This package provides a simple process manager class to be able to execute multiple processes with a specified limit
 of parallel processes. The class expects the processes to use the [Symfony Process](https://github.com/symfony/process) 

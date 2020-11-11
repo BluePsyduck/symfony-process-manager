@@ -1,0 +1,13 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "phpunit-coverage-check",
+            "pattern": [
+                {
+                    "regexp": "(Total code coverage is .* % which is below the accepted .*)",
+                    "message": 1
+                }
+            ]
+        }
+    ]
+}

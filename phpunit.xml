@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <phpunit colors="true">
     <testsuites>
-        <testsuite name="BluePsyduck\SymfonyProcessManager">
+        <testsuite name="unit-test">
             <directory>test/src</directory>
         </testsuite>
     </testsuites>
