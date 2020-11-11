@@ -6,7 +6,6 @@ namespace BluePsyduckTest\SymfonyProcessManager;
 
 use BluePsyduck\TestHelper\ReflectionTrait;
 use BluePsyduck\SymfonyProcessManager\ProcessManager;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -49,9 +48,8 @@ class ProcessManagerTest extends TestCase
     {
         $numberOfParallelProcesses = 42;
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['executeNextPendingProcess'])
+                        ->onlyMethods(['executeNextPendingProcess'])
                         ->setConstructorArgs([])
                         ->getMock();
         $manager->expects($this->once())
@@ -175,7 +173,6 @@ class ProcessManagerTest extends TestCase
      */
     public function testInvokeCallback(bool $withCallback): void
     {
-        /* @var Process $process */
         $process = $this->createMock(Process::class);
 
         $callback = null;
@@ -200,7 +197,6 @@ class ProcessManagerTest extends TestCase
      */
     public function testAddProcess(): void
     {
-        /* @var Process $process */
         $process = $this->createMock(Process::class);
         $callback = 'strval';
         $env = ['abc' => 'def'];
@@ -213,9 +209,8 @@ class ProcessManagerTest extends TestCase
             [$process, $callback, $env],
         ];
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['executeNextPendingProcess', 'checkRunningProcesses'])
+                        ->onlyMethods(['executeNextPendingProcess', 'checkRunningProcesses'])
                         ->disableOriginalConstructor()
                         ->getMock();
         $manager->expects($this->once())
@@ -257,11 +252,7 @@ class ProcessManagerTest extends TestCase
         $processStartCallback = 'intval';
         $env = ['foo' => 'bar'];
 
-        /* @var Process|MockObject $process */
-        $process = $this->getMockBuilder(Process::class)
-                        ->setMethods(['start', 'getPid'])
-                        ->disableOriginalConstructor()
-                        ->getMock();
+        $process = $this->createMock(Process::class);
         $process->expects($this->once())
                 ->method('start')
                 ->with($callback, $env);
@@ -280,9 +271,13 @@ class ProcessManagerTest extends TestCase
         $runningProcesses = [1337 => 'ghi'];
         $expectedRunningProcesses = $expectRunningProcess ? [1337 => 'ghi', 42 => $process] : ['1337' => 'ghi'];
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['canExecuteNextPendingRequest', 'sleep', 'invokeCallback', 'checkRunningProcess'])
+                        ->onlyMethods([
+                            'canExecuteNextPendingRequest',
+                            'sleep',
+                            'invokeCallback',
+                            'checkRunningProcess',
+                        ])
                         ->setConstructorArgs([0, 0, $processStartDelay])
                         ->getMock();
         $manager->expects($this->once())
@@ -294,7 +289,6 @@ class ProcessManagerTest extends TestCase
         $manager->expects($expectCheck ? $this->once() : $this->never())
                 ->method('checkRunningProcess')
                 ->with($pid, $process);
-
 
         $manager->expects($this->once())
                 ->method('invokeCallback')
@@ -354,14 +348,11 @@ class ProcessManagerTest extends TestCase
      */
     public function testCheckRunningProcesses(): void
     {
-        /* @var Process $process1 */
         $process1 = $this->createMock(Process::class);
-        /* @var Process $process2 */
         $process2 = $this->createMock(Process::class);
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['checkRunningProcess'])
+                        ->onlyMethods(['checkRunningProcess'])
                         ->disableOriginalConstructor()
                         ->getMock();
         $manager->expects($this->exactly(2))
@@ -405,29 +396,22 @@ class ProcessManagerTest extends TestCase
         bool $expectFinish,
         bool $expectUnset
     ): void {
-        /* @var Process|MockObject $process */
-        $process = $this->getMockBuilder(Process::class)
-                        ->setMethods(['isRunning'])
-                        ->disableOriginalConstructor()
-                        ->getMock();
-        $process->expects($this->once())
+        $process = $this->createMock(Process::class);
+        $process->expects($this->any())
                 ->method('isRunning')
                 ->willReturn($resultIsRunning);
 
-        /* @var Process $process2 */
         $process2 = $this->createMock(Process::class);
         $runningProcesses = [42 => $process, 1337 => $process2];
         $expectedRunningProcesses = $expectUnset ? [1337 => $process2] : [42 => $process, 1337 => $process2];
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['checkProcessTimeout', 'invokeCallback', 'executeNextPendingProcess'])
+                        ->onlyMethods(['checkProcessTimeout', 'invokeCallback', 'executeNextPendingProcess'])
                         ->disableOriginalConstructor()
                         ->getMock();
         $manager->expects($this->once())
                 ->method('checkProcessTimeout')
-                ->with($process)
-                ->willReturn(false);
+                ->with($process);
         $manager->expects($this->exactly($expectFinish ? 2 : 1))
                 ->method('invokeCallback')
                 ->withConsecutive(
@@ -466,11 +450,7 @@ class ProcessManagerTest extends TestCase
      */
     public function testCheckProcessTimeout(bool $throwException, bool $expectInvoke): void
     {
-        /* @var Process|MockObject $process */
-        $process = $this->getMockBuilder(Process::class)
-                        ->setMethods(['checkTimeout'])
-                        ->disableOriginalConstructor()
-                        ->getMock();
+        $process = $this->createMock(Process::class);
 
         if ($throwException) {
             $process->expects($this->once())
@@ -481,9 +461,8 @@ class ProcessManagerTest extends TestCase
                     ->method('checkTimeout');
         }
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['invokeCallback'])
+                        ->onlyMethods(['invokeCallback'])
                         ->disableOriginalConstructor()
                         ->getMock();
         $manager->expects($expectInvoke ? $this->once() : $this->never())
@@ -502,9 +481,8 @@ class ProcessManagerTest extends TestCase
     {
         $pollInterval = 1337;
 
-        /* @var ProcessManager|MockObject $manager */
         $manager = $this->getMockBuilder(ProcessManager::class)
-                        ->setMethods(['hasUnfinishedProcesses', 'sleep', 'checkRunningProcesses'])
+                        ->onlyMethods(['hasUnfinishedProcesses', 'sleep', 'checkRunningProcesses'])
                         ->setConstructorArgs([42, $pollInterval, 21])
                         ->getMock();
         $manager->expects($this->exactly(3))
