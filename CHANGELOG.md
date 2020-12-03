@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2 - 2020-12-03
+
+### Added
+
+- Support for PHP 8.0
+
 ## 1.3.1 - 2020-01-12
 
 ### Added
