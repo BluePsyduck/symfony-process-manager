@@ -35,7 +35,7 @@ class ProcessManager implements ProcessManagerInterface
 
     /**
      * The processes currently waiting to be executed.
-     * @var array<mixed>
+     * @var array<array{Process<string>, callable|null, array<mixed>}>
      */
     protected $pendingProcessData = [];
 
@@ -198,17 +198,20 @@ class ProcessManager implements ProcessManagerInterface
         if ($this->canExecuteNextPendingRequest()) {
             $this->sleep($this->processStartDelay);
 
-            [$process, $callback, $env] = array_shift($this->pendingProcessData);
-            /* @var Process $process */
-            $this->invokeCallback($this->processStartCallback, $process);
-            $process->start($callback, $env);
+            $data = array_shift($this->pendingProcessData);
+            if ($data !== null) {
+                [$process, $callback, $env] = $data;
+                /* @var Process $process */
+                $this->invokeCallback($this->processStartCallback, $process);
+                $process->start($callback, $env);
 
-            $pid = $process->getPid();
-            if ($pid === null) {
-                // The process finished before we were able to check its process id.
-                $this->checkRunningProcess($pid, $process);
-            } else {
-                $this->runningProcesses[$pid] = $process;
+                $pid = $process->getPid();
+                if ($pid === null) {
+                    // The process finished before we were able to check its process id.
+                    $this->checkRunningProcess($pid, $process);
+                } else {
+                    $this->runningProcesses[$pid] = $process;
+                }
             }
         }
     }
