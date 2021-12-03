@@ -8,11 +8,10 @@ on:
 jobs:
   call-workflow-ci-php-general:
     name: General
-    uses: BluePsyduck/github-workflows/.github/workflows/ci-php-general.yaml@master
+    uses: BluePsyduck/github-workflows/.github/workflows/ci-php-general.yaml@v1
 
   call-workflow-ci-php-tests:
     name: Tests
-    uses: BluePsyduck/github-workflows/.github/workflows/ci-php-tests.yaml@master
+    uses: BluePsyduck/github-workflows/.github/workflows/ci-php-tests.yaml@v1
     with:
       php-versions: "8.1 8.0 7.4 7.3 7.2"
-      min-php-version: "7.2"
